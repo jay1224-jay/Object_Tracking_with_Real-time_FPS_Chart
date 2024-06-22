@@ -62,8 +62,13 @@ bbox = cv2.selectROI(frame, False)
 
 ok = tracker.init(frame, bbox)
 
+Stop = False
+
 def tracking():
-    global fps
+    global fps, Stop
+    if Stop:
+        return
+    
     
     ok, frame = video.read()
      
@@ -84,6 +89,11 @@ def tracking():
     cv2.putText(frame, "FPS : " + str(int(fps)), (100,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 2)
 
     cv2.imshow("Tracking", frame)
+    # Exit if ESC pressed
+    k = cv2.waitKey(1) & 0xff
+    if k == 27 : Stop = True
+    return fps
+
 
 fig, ax = plt.subplots()
 x_data, y_data = [], []
@@ -94,31 +104,31 @@ offset = 100
 
 def init():
     ax.set_xlim(0, offset)
-    ax.set_ylim(0, 40)
+    ax.set_ylim(0, 60)
     return ln,
 
 def update(frame):
 
     global currentMax
 
-    tracking()
+    currentFPS = 0
+    if not Stop:
+        currentFPS = tracking()
+        x_data.append(frame)
+        print("FPS:", currentFPS)
+        y_data.append(currentFPS)
 
-    x_data.append(frame)
-    currentFps = getFPS()
-    if ( currentFps > currentMax ) :
-        print("change Y")
-        ax.set_ylim(0, currentMax+5)
-        currentMax = currentFps  
-    y_data.append(currentFps)
+        ln.set_data(x_data, y_data)
 
-    ln.set_data(x_data, y_data)
-
-    if frame >= offset:
-        ax.set_xlim(frame - offset, frame)
+        if frame >= offset:
+            ax.set_xlim(frame - offset, frame)
 
     return ln,
 
 print("start tracking...")
+
+
+
 ani = FuncAnimation(fig, update, frames=count(), init_func=init, interval=10, blit=True)
 plt.title('Real-time FPS Chart')
 plt.xlabel('Time')
