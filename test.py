@@ -68,14 +68,9 @@ def tracking():
     global fps, Stop
     if Stop:
         return
-    
-    
     ok, frame = video.read()
-     
     timer = cv2.getTickCount()
-
     ok, bbox = tracker.update(frame)
-
     fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
 
     if ok:
@@ -133,7 +128,4 @@ ani = FuncAnimation(fig, update, frames=count(), init_func=init, interval=10, bl
 plt.title('Real-time FPS Chart')
 plt.xlabel('Time')
 plt.ylabel('FPS')
-
-
-
 plt.show()
